@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroScan — Deteksi Penyakit Daun Jagung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Floating leaves bg -->
+<div class="bg-leaves" id="bgLeaves"></div>
+
+<div class="card">
+    <div class="card-content">
+        <div class="left-column">
+            <div class="badge"><span class="badge-dot"></span>CNN Model</div>
+
+            <h1>Deteksi Penyakit<br><em>Daun Jagung</em></h1>
+            <p class="subtitle">Unggah foto daun jagung untuk analisis penyakit secara otomatis menggunakan model Convolutional Neural Network.</p>
+
+            <div class="divider"></div>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" name="file" accept="image/*" required id="fileInput">
+                    <span class="upload-icon">🌿</span>
+                    <p><strong>Klik untuk unggah</strong> atau seret gambar ke sini</p>
+                    <p style="font-size:12px;margin-top:4px;">Format: JPG, PNG, WEBP</p>
+                    <p class="file-name" id="fileName"></p>
+                </div>
+
+                <button class="btn" type="submit">
+                    <span class="btn-icon">🔬</span>Mulai Analisis Daun
+                </button>
+            </form>
+        </div>
+
+        {% if hasil %}
+        <div class="right-column">
+            <div class="result-box">
+                <div class="result-header">
+                    <div class="result-label">Hasil Klasifikasi</div>
+                    <div class="result-title">{{ info.nama_id if info else hasil }}</div>
+                </div>
+                <div class="result-body">
+                    <div class="confidence-row">
+                        <span class="confidence-label">Tingkat Keyakinan</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="--pct: {{ akurasi }}%"></div>
+                        </div>
+                        <span class="confidence-val">{{ akurasi }}%</span>
+                    </div>
+                    <div class="preview-wrap">
+                        <img class="preview" src="{{ gambar }}" alt="Preview Daun Jagung">
+                    </div>
+                    {% if info %}
+                    <div class="disease-detail">
+                        <div class="disease-desc">
+                            <strong>Deskripsi Penyakit</strong>
+                            <p>{{ info.deskripsi }}</p>
+                        </div>
+                        <div class="disease-sol">
+                            <strong>Rekomendasi Tindakan</strong>
+                            <p>{{ info.solusi }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<p class="footer">AgroScan &nbsp;·&nbsp; Sistem Deteksi Berbasis CNN &nbsp;·&nbsp; 2025</p>
+
+<script>
+    // Floating leaves
+    const container = document.getElementById('bgLeaves');
+    const icons = ['🌽','🌿','🍃','🌱'];
+    for (let i = 0; i < 14; i++) {
+        const s = document.createElement('span');
+        s.textContent = icons[i % icons.length];
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.animationDuration = (18 + Math.random() * 20) + 's';
+        s.style.animationDelay = (Math.random() * 20) + 's';
+        s.style.fontSize = (20 + Math.random() * 20) + 'px';
+        container.appendChild(s);
+    }
+
+    // File name display
+    document.getElementById('fileInput').addEventListener('change', function() {
+        const fn = this.files[0]?.name;
+        document.getElementById('fileName').textContent = fn ? '📎 ' + fn : '';
+    });
+
+    // Drag & drop styles
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', () => zone.classList.remove('drag-over'));
+
+    // Animate confidence bar on load
+    document.querySelectorAll('.bar-fill').forEach(el => {
+        const target = el.style.getPropertyValue('--pct');
+        el.style.setProperty('--pct', '0%');
+        requestAnimationFrame(() => {
+            setTimeout(() => el.style.setProperty('--pct', target), 100);
+        });
+    });
+
+    // Form loading state
+    const form = document.querySelector('form');
+    const btn = document.querySelector('.btn');
+    if (form && btn) {
+        form.addEventListener('submit', function() {
+            btn.classList.add('loading');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Menganalisis Daun...';
+        });
+    }
+</script>
+</body>
+</html>
+```
